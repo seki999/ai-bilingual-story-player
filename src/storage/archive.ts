@@ -29,9 +29,20 @@ export async function exportStory(
   project: StoryProject,
   progress: (value: number) => void = () => {},
 ) {
+  return packStory(
+    project,
+    await db.assets.bulkGet(assetIds(project)),
+    progress,
+  );
+}
+
+export async function packStory(
+  project: StoryProject,
+  blobs: (Asset | undefined)[],
+  progress: (value: number) => void = () => {},
+) {
   const zip = new JSZip();
   const keys = assetIds(project);
-  const blobs = await db.assets.bulkGet(keys);
   const assets = await Promise.all(
     blobs.map(async (blob, index) => {
       if (!blob) throw new Error(`资源缺失：${keys[index]}`);
@@ -185,6 +196,7 @@ function validate(
 export async function importStory(
   file: Blob,
   progress: (value: number) => void = () => {},
+  projectId: string = id(),
 ) {
   if (file.size > 250 * 1024 * 1024) throw new Error("故事包超过 250 MB。");
   const zip = await JSZip.loadAsync(await file.arrayBuffer());
@@ -261,7 +273,7 @@ export async function importStory(
   const settings = candidate.player;
   const p: StoryProject = {
     version: 1,
-    id: id(),
+    id: projectId,
     title: candidate.title,
     source: candidate.source,
     speakers: candidate.speakers,
@@ -314,12 +326,15 @@ export async function importStory(
       )
     : {};
   if (!["zh", "en", "mixed"].includes(p.player.mode)) p.player.mode = "mixed";
-  await db.transaction("rw", db.projects, db.assets, async () => {
+  const saved = await db.transaction("rw", db.projects, db.assets, async () => {
+    const existing = await db.projects.get(projectId);
+    if (existing) return existing;
     await db.assets.bulkPut(assets);
     await db.projects.put(p);
+    return p;
   });
   progress(100);
-  return p;
+  return saved;
 }
 
 export function download(blob: Blob, name: string) {

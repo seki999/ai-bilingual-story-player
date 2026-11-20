@@ -1023,3 +1023,6 @@ summary {
     scroll-behavior: auto !important;
   }
 }
+.local-library-heading {
+  margin-top: 22px;
+}

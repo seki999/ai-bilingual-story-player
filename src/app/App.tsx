@@ -37,6 +37,11 @@ import {
 import { ImageQueue } from "../providers/queue";
 import { db, removeProject, selectionKey } from "../storage/db";
 import {
+  loadCatalog,
+  openPublished,
+  type PublishedStory,
+} from "../storage/catalog";
+import {
   download,
   exportStory,
   importStory,
@@ -134,6 +139,8 @@ export function App() {
   const [project, setProject] = useState<StoryProject>();
   const current = useRef<StoryProject | undefined>(undefined);
   const [library, setLibrary] = useState<StoryProject[]>([]);
+  const [published, setPublished] = useState<PublishedStory[]>([]);
+  const [catalogError, setCatalogError] = useState("");
   const [view, setView] = useState<View>("player");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -345,8 +352,13 @@ export function App() {
     setError("");
     setNotice("");
     setView(view);
-    if (view === "library")
+    if (view === "library") {
       void refreshLibrary().catch((e) => setError(message(e)));
+      setCatalogError("");
+      void loadCatalog()
+        .then(setPublished)
+        .catch((e) => setCatalogError(message(e)));
+    }
   }
 
   async function action(task: () => Promise<void>) {
@@ -730,6 +742,37 @@ export function App() {
         )}
         {view === "library" && (
           <section className="panel library">
+            <h2>已发布故事</h2>
+            {catalogError && <p className="muted">{catalogError}</p>}
+            {!catalogError && published.length === 0 && (
+              <p className="muted">暂无发布的故事。可以先体验鹦鹉餐厅 Demo。</p>
+            )}
+            {published.map((story) => (
+              <div className="library-row" key={story.slug}>
+                <button
+                  className="project-link"
+                  disabled={busy}
+                  onClick={() =>
+                    void action(async () => {
+                      await writes.current;
+                      const p = await openPublished(story, (value) =>
+                        setNotice(`正在加载 ${Math.round(value)}%`),
+                      );
+                      loadProject(p);
+                    })
+                  }
+                >
+                  <span className="brand-mark">
+                    <Clapperboard size={21} />
+                  </span>
+                  <span>
+                    <strong>{story.title}</strong>
+                    <small>{story.scenes} 个镜头</small>
+                  </span>
+                </button>
+              </div>
+            ))}
+            <h2 className="local-library-heading">本地项目</h2>
             {library.map((p) => (
               <div className="library-row" key={p.id}>
                 <button

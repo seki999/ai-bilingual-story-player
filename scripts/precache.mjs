@@ -4,7 +4,10 @@ import { resolve } from "node:path";
 
 const dist = resolve("dist");
 const files = (await readdir(dist, { recursive: true, withFileTypes: true }))
-  .filter((entry) => entry.isFile() && entry.name !== "sw.js")
+  .filter(
+    (entry) =>
+      entry.isFile() && entry.name !== "sw.js" && !entry.name.endsWith(".zip"),
+  )
   .map((entry) =>
     resolve(entry.parentPath, entry.name)
       .slice(dist.length + 1)
@@ -37,7 +40,14 @@ self.addEventListener('fetch', event => {
     event.respondWith(fetch(event.request).catch(() => caches.open(cacheKey).then(cache => cache.match('./index.html'))))
     return
   }
-  if (urls.includes('./' + url.href.slice(self.registration.scope.length))) {
+  const relative = './' + url.href.slice(self.registration.scope.length)
+  if (relative === './stories/index.json') {
+    event.respondWith(fetch(event.request, { cache: 'no-cache' }).catch(
+      () => caches.open(cacheKey).then(cache => cache.match(relative))
+    ))
+    return
+  }
+  if (urls.includes(relative)) {
     event.respondWith(caches.open(cacheKey).then(cache => cache.match(event.request)).then(found => found ?? fetch(event.request)))
   }
 })
