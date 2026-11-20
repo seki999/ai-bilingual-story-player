@@ -118,6 +118,31 @@ export function Player({
   };
   return (
     <>
+      <div className="mode-row" aria-label="播放模式">
+        {modeLabels.map(([mode, label]) => (
+          <button
+            key={mode}
+            aria-pressed={project.player.mode === mode}
+            onClick={() => onMode(mode)}
+          >
+            {label}
+          </button>
+        ))}
+        {project.player.mode === "mixed" && (
+          <select
+            aria-label="中英播放顺序"
+            value={project.player.order}
+            onChange={(event) =>
+              onSettings({
+                order: event.target.value as "paired" | "serial",
+              })
+            }
+          >
+            <option value="paired">逐段对照</option>
+            <option value="serial">整篇中文后英语</option>
+          </select>
+        )}
+      </div>
       <div className="player-grid">
         <section>
           <div className="frame-shell" ref={frame}>
@@ -248,31 +273,6 @@ export function Player({
               {snapshot.error && <p role="alert">{snapshot.error}</p>}
             </div>
           </div>
-          <div className="mode-row" aria-label="播放模式">
-            {modeLabels.map(([mode, label]) => (
-              <button
-                key={mode}
-                aria-pressed={project.player.mode === mode}
-                onClick={() => onMode(mode)}
-              >
-                {label}
-              </button>
-            ))}
-            {project.player.mode === "mixed" && (
-              <select
-                aria-label="中英播放顺序"
-                value={project.player.order}
-                onChange={(event) =>
-                  onSettings({
-                    order: event.target.value as "paired" | "serial",
-                  })
-                }
-              >
-                <option value="paired">逐段对照</option>
-                <option value="serial">整篇中文后英语</option>
-              </select>
-            )}
-          </div>
           {translation && (
             <div className="translation">
               <span>{cue?.language === "zh" ? "EN" : "中文"}</span>
@@ -370,9 +370,25 @@ function SceneRow({
   active: boolean;
   onClick(): void;
 }) {
-  const url = useAssetUrl(scene.assetId);
+  const row = useRef<HTMLButtonElement>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+  useEffect(() => {
+    if (!row.current || !scene.assetId) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setNearViewport(entry.isIntersecting),
+      { root: row.current.parentElement, rootMargin: "180px" },
+    );
+    observer.observe(row.current);
+    return () => observer.disconnect();
+  }, [scene.assetId]);
+  const url = useAssetUrl(nearViewport ? scene.assetId : undefined);
   return (
-    <button className="cue scene-row" aria-current={active} onClick={onClick}>
+    <button
+      ref={row}
+      className="cue scene-row"
+      aria-current={active}
+      onClick={onClick}
+    >
       <span className="thumbnail">
         <SceneArt scene={scene} url={url} small />
       </span>

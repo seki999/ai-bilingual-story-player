@@ -56,21 +56,29 @@ it("keeps successful frames and retries failed tasks without replacing others", 
   );
   const [first, second] = p.scenes;
   const failure = second.imagePrompt;
+  const requests: FormData[] = [];
   vi.stubGlobal(
     "fetch",
-    vi.fn(
-      async (_url: URL, options: RequestInit) =>
-        new Response("image", {
-          status:
-            (options.body as FormData).get("prompt") === failure ? 503 : 200,
-          headers: { "Content-Type": "image/png" },
-        }),
-    ),
+    vi.fn(async (_url: URL, options: RequestInit) => {
+      const request = options.body as FormData;
+      requests.push(request);
+      return new Response("image", {
+        status: request.get("prompt") === failure ? 503 : 200,
+        headers: { "Content-Type": "image/png" },
+      });
+    }),
   );
   await db.projects.put(p);
   const queue = new ImageQueue();
   await queue.run(p.id, [first, second], config, () => {});
   const saved = await db.projects.get(p.id);
+  expect(requests[0].get("prompt")).toContain("Character design reference");
+  expect(saved?.characters[0].referenceAssetId).toBeDefined();
+  expect(
+    requests
+      .find((request) => request.get("prompt") === first.imagePrompt)
+      ?.getAll("reference"),
+  ).toHaveLength(1);
   expect(saved?.scenes[0].assetId).toBeDefined();
   expect(saved?.scenes[1].assetId).toBeUndefined();
   expect(await db.tasks.where("projectId").equals(p.id).toArray()).toEqual(

@@ -515,7 +515,7 @@ footer span {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  margin-top: 11px;
+  margin-bottom: 12px;
 }
 .mode-row button {
   padding: 0.55rem 1rem;

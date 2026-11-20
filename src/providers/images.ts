@@ -58,7 +58,15 @@ export class ProxyImageProvider implements ImageProvider {
       credentials: "omit",
       redirect: "error",
     });
-    if (!response.ok) throw new Error(`图片代理返回 HTTP ${response.status}`);
+    if (!response.ok) {
+      const plain = response.headers
+        .get("Content-Type")
+        ?.startsWith("text/plain");
+      const detail = plain ? (await response.text()).trim().slice(0, 300) : "";
+      throw new Error(
+        `图片代理返回 HTTP ${response.status}${detail ? ` · ${detail}` : ""}`,
+      );
+    }
     const blob = await response.blob();
     if (!permitsAsset(blob.type, "image") || blob.size > 35 * 1024 * 1024)
       throw new Error("代理必须返回不超过 35 MB 的受支持图片。");
@@ -153,7 +161,7 @@ export async function imageRequest(
   people: CharacterProfile[],
 ): Promise<ImageRequest> {
   const cast = people.filter((p) => scene.characters.includes(p.id));
-  const keys = cast.flatMap((p) => p.referenceAssetId ?? []);
+  const keys = cast.flatMap((p) => p.referenceAssetId ?? []).slice(0, 4);
   const references = (await db.assets.bulkGet(keys)).filter(
     (asset): asset is ImageAsset => asset?.kind === "image",
   );
@@ -162,4 +170,31 @@ export async function imageRequest(
     negativePrompt: scene.negativePrompt,
     references,
   };
+}
+
+export function referenceRequest(
+  character: CharacterProfile,
+  style: string,
+): ImageRequest {
+  return {
+    prompt: `${style}. Character design reference, single full-body character or prop centered on a clean backdrop. ${character.name}: ${character.description}`,
+    negativePrompt: "watermark, captions, unrelated people",
+    references: [],
+  };
+}
+
+export function missingReferences(
+  characters: CharacterProfile[],
+  scenes: Scene[],
+) {
+  const frequency = new Map<string, number>();
+  for (const scene of scenes)
+    for (const key of scene.characters) {
+      frequency.set(key, (frequency.get(key) ?? 0) + 1);
+    }
+  return characters
+    .filter((person) => frequency.has(person.id))
+    .sort((a, b) => frequency.get(b.id)! - frequency.get(a.id)!)
+    .slice(0, 4)
+    .filter((person) => !person.referenceAssetId && person.description.trim());
 }

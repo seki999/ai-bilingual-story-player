@@ -32,6 +32,7 @@ import {
   generateImage,
   optimizeImage,
   ProxyImageProvider,
+  referenceRequest,
 } from "../providers/images";
 import { ImageQueue } from "../providers/queue";
 import { db, removeProject, selectionKey } from "../storage/db";
@@ -392,7 +393,7 @@ export function App() {
     setError("");
     try {
       await writes.current;
-      await queue.run(
+      const referenceErrors = await queue.run(
         key,
         scenes.filter((scene) => scene.imagePrompt.trim()),
         config,
@@ -404,8 +405,17 @@ export function App() {
       );
       await writes.current;
       const p = await db.projects.get(key);
-      if (p && current.current?.id === key)
-        accept({ ...current.current, scenes: p.scenes });
+      if (p && current.current?.id === key) {
+        accept({
+          ...current.current,
+          scenes: p.scenes,
+          characters: p.characters,
+        });
+        if (referenceErrors?.length)
+          setNotice(
+            `部分参考图未生成，相关镜头已使用文字设定：${referenceErrors.join("、")}`,
+          );
+      }
     } catch (e) {
       setError(message(e));
     }
@@ -421,11 +431,7 @@ export function App() {
     try {
       const asset = await generateImage(
         new ProxyImageProvider(config),
-        {
-          prompt: `${p.generation.style}. Character design reference, single full-body character or prop centered on a clean backdrop. ${character.name}: ${character.description}`,
-          negativePrompt: "watermark, captions, unrelated people",
-          references: [],
-        },
+        referenceRequest(character, p.generation.style),
         config.webpQuality,
         controller.signal,
       );

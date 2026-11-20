@@ -21,6 +21,7 @@ import type {
 } from "../types";
 import { blankScene, makePrompt, styles } from "../core/storyboard";
 import { id } from "../core/dialogue";
+import { missingReferences } from "../providers/images";
 import { useAssetUrl } from "../storage/useAsset";
 import { IconButton, SceneArt } from "./common";
 
@@ -76,13 +77,17 @@ export function Editor(props: Props) {
   const task = tasks.find((item) => item.sceneId === scene?.sceneId);
   const unfinished = project.scenes.filter(
     (s) =>
-      !s.assetId ||
-      tasks.some(
-        (t) =>
-          t.sceneId === s.sceneId &&
-          ["failed", "pending", "running", "cancelled"].includes(t.status),
-      ),
+      s.imagePrompt.trim() &&
+      (!s.assetId ||
+        tasks.some(
+          (t) =>
+            t.sceneId === s.sceneId &&
+            ["failed", "pending", "running", "cancelled"].includes(t.status),
+        )),
   );
+  const referenceCount = config.supportsReferences
+    ? missingReferences(project.characters, unfinished).length
+    : 0;
   const patchScene = (change: Partial<Scene>) =>
     update((p) => ({
       ...p,
@@ -327,10 +332,15 @@ export function Editor(props: Props) {
                   当前使用文字角色描述，镜头之间的外观一致性可能有限。
                 </p>
               )}
+              {referenceCount > 0 && (
+                <p className="muted">
+                  批量生成会先尝试生成 {referenceCount} 张缺失的主要角色参考图。
+                </p>
+              )}
               <p className="muted">
                 本批费用上限估算{" "}
                 {config.unitPrice > 0
-                  ? `$${(unfinished.length * config.unitPrice).toFixed(2)}`
+                  ? `$${((unfinished.length + referenceCount) * config.unitPrice).toFixed(2)}`
                   : "待填写单价"}
                 。费用取决于代理计费和缓存命中。
               </p>

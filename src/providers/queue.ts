@@ -1,7 +1,13 @@
 import { id } from "../core/dialogue";
 import { db } from "../storage/db";
 import type { GenerationTask, ProviderConfig, Scene } from "../types";
-import { generateImage, imageRequest, ProxyImageProvider } from "./images";
+import {
+  generateImage,
+  imageRequest,
+  missingReferences,
+  ProxyImageProvider,
+  referenceRequest,
+} from "./images";
 
 export class ImageQueue {
   private controller?: AbortController;
@@ -40,6 +46,46 @@ export class ImageQueue {
       });
       await db.tasks.bulkPut(tasks);
       onChange();
+      const referenceErrors: string[] = [];
+      const project =
+        provider.supportsReferences && !force
+          ? await db.projects.get(projectId)
+          : undefined;
+      if (project) {
+        for (const person of missingReferences(project.characters, scenes)) {
+          if (signal.aborted) break;
+          try {
+            const asset = await generateImage(
+              provider,
+              referenceRequest(person, project.generation.style),
+              config.webpQuality,
+              signal,
+            );
+            signal.throwIfAborted();
+            await db.transaction("rw", db.projects, async () => {
+              const fresh = await db.projects.get(projectId);
+              const current = fresh?.characters.find(
+                (character) => character.id === person.id,
+              );
+              if (
+                !fresh ||
+                !current ||
+                current.referenceAssetId ||
+                current.name !== person.name ||
+                current.description !== person.description
+              )
+                return;
+              current.referenceAssetId = asset.id;
+              await db.projects.put(fresh);
+            });
+          } catch (cause) {
+            if (!signal.aborted)
+              referenceErrors.push(
+                `${person.name}（${cause instanceof Error ? cause.message : String(cause)}）`,
+              );
+          }
+        }
+      }
       let cursor = 0;
       const worker = async () => {
         while (!signal.aborted && cursor < tasks.length) {
@@ -106,15 +152,14 @@ export class ImageQueue {
       );
       if (signal.aborted)
         await db.tasks.bulkUpdate(
-          tasks
-            .slice(cursor)
-            .map((task) => ({
-              key: task.id,
-              changes: { status: "cancelled" },
-            })),
+          tasks.slice(cursor).map((task) => ({
+            key: task.id,
+            changes: { status: "cancelled" },
+          })),
         );
       const failed = workers.find((result) => result.status === "rejected");
       if (failed?.status === "rejected") throw failed.reason;
+      return referenceErrors;
     } finally {
       this.controller = undefined;
       onChange();
