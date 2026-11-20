@@ -2,7 +2,7 @@
 
 数据库 `ai-bilingual-story-player` (Dexie v1) 有 projects、assets 和 tasks 三张表。主键为稳定的字符串 ID，媒体以 Blob 存储，图片请求哈希独立索引。浏览器选中的项目及代理 URL 使用带版本的独立 LocalStorage 键。未来数据库升级由 Dexie 迁移代码处理。
 
-ZIP v1 包含以下条目。
+播放器会导入符合以下 ZIP v1 格式的故事包。Codex 可将一篇故事的 JSON 和插画打包后交给播放器导入。
 
 | 条目 | 内容 |
 | --- | --- |
