@@ -129,3 +129,17 @@ describe("dialogue and scenes", () => {
     expect(result.project.cues).toHaveLength(parsed.segments.length);
   });
 });
+
+it("preserves Markdown speaker numbers when the transcript lists English first", () => {
+  const parsed = parseDialogue(
+    "**Speaker 1:** Hello again!\n**Speaker 3:** 很高兴再次见面！\n**Speaker 2:** I am glad to be here.\n**Speaker 4:** 我很高兴来到这里。",
+  );
+  expect(parsed.speakers.map(({ name, language }) => [name, language])).toEqual(
+    [
+      ["Speaker 1", "en"],
+      ["Speaker 3", "zh"],
+      ["Speaker 2", "en"],
+      ["Speaker 4", "zh"],
+    ],
+  );
+});

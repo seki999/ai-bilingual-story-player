@@ -6,7 +6,7 @@ import type {
 } from "../types";
 
 export const id = () => crypto.randomUUID();
-const marker = /^\s*Speaker\s*(\d+)\s*[:：]\s*(.*)$/i;
+const marker = /^\s*(?:\*\*)?Speaker\s*(\d+)\s*[:：](?:\*\*)?\s*(.*)$/i;
 
 export function parseDialogue(source: string) {
   const speakers = new Map<string, Speaker>();
@@ -42,6 +42,23 @@ export function parseDialogue(source: string) {
     turn.text = turn.text.trim();
     if (!turn.text)
       throw new Error(`${speakers.get(turn.speakerId)?.name} 的发言为空。`);
+  }
+  // Some bilingual transcripts number the English speakers first.
+  const hasExpectedLanguage = (number: number, chinese: boolean) => {
+    const text = turns
+      .filter((turn) => turn.speakerId === `speaker-${number}`)
+      .map((turn) => turn.text)
+      .join(" ");
+    const han = (text.match(/\p{Script=Han}/gu) ?? []).length;
+    const latin = (text.match(/[a-z]/gi) ?? []).length;
+    return chinese ? han >= 3 && han * 4 >= latin : latin >= 4 && han === 0;
+  };
+  if (
+    [1, 2].every((n) => hasExpectedLanguage(n, false)) &&
+    [3, 4].every((n) => hasExpectedLanguage(n, true))
+  ) {
+    for (const speaker of speakers.values())
+      speaker.language = speaker.language === "zh" ? "en" : "zh";
   }
   const segments: SemanticSegment[] = turns.flatMap((turn) => {
     const language = speakers.get(turn.speakerId)!.language;
