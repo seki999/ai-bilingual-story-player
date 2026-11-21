@@ -223,8 +223,9 @@ small {
 .top-actions {
   gap: 10px;
 }
-.top-actions .icon-button {
-  border-color: #323440;
+.top-actions button[aria-current="page"] {
+  background: #292238;
+  color: #d6c2ff;
 }
 main {
   max-width: 1440px;
@@ -916,10 +917,9 @@ summary {
     padding: 0.45rem;
     min-height: 36px;
   }
-  .top-actions .icon-button {
-    width: 34px;
-    min-width: 34px;
-    min-height: 34px;
+  .top-actions button:not(.primary) {
+    padding-inline: 0.55rem;
+    min-height: 36px;
   }
   main {
     padding-top: 21px;

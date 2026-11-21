@@ -6,7 +6,6 @@ import {
   Film,
   FolderOpen,
   Plus,
-  Settings2,
   Sparkles,
   Upload,
 } from "lucide-react";
@@ -555,13 +554,11 @@ export function App() {
           </nav>
           <div className="top-actions">
             <button
-              className="icon-button"
-              aria-label="设置"
-              title="设置"
+              aria-current={view === "settings" ? "page" : undefined}
               disabled={!project}
               onClick={() => open("settings")}
             >
-              <Settings2 size={19} />
+              设置
             </button>
             <button
               className="primary"

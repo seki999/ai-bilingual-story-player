@@ -9,7 +9,9 @@ test("subtitle scale and placement and per-speaker voice preferences persist", a
   const originalSize = await subtitle.evaluate((el) =>
     parseFloat(getComputedStyle(el).fontSize),
   );
-  await page.getByRole("button", { name: "设置" }).click();
+  const settings = page.getByRole("button", { name: "设置", exact: true });
+  await expect(settings).toHaveText("设置");
+  await settings.click();
   await page.getByLabel("字幕大小").selectOption("150");
   await page.getByLabel("字幕位置").selectOption("overlay-top");
   for (const [speaker, gender] of [
@@ -29,7 +31,7 @@ test("subtitle scale and placement and per-speaker voice preferences persist", a
   ).toBeCloseTo(originalSize * 1.5, 1);
   await page.reload();
   await expect(subtitle).toHaveAttribute("data-position", "overlay-top");
-  await page.getByRole("button", { name: "设置" }).click();
+  await settings.click();
   await expect(page.getByLabel("字幕大小")).toHaveValue("150");
   await expect(page.getByLabel("Speaker 1 声线")).toHaveValue("male");
   await expect(page.getByLabel("Speaker 2 声线")).toHaveValue("female");
