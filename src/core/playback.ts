@@ -18,16 +18,18 @@ export function makeTimeline(project: StoryProject): PlaybackTimeline {
     entries.push({ cue, start: duration, end: duration + length, gap });
     duration += length + gap;
   };
+  const languages =
+    settings.order === "paired-en-first"
+      ? (["en", "zh"] as const)
+      : (["zh", "en"] as const);
   if (settings.mode !== "mixed")
     (settings.mode === "zh" ? zh : en).forEach((cue) => add(cue));
   else if (settings.order === "serial" && !settings.follow)
     [...zh, ...en].forEach((cue) => add(cue));
   else
     for (const group of project.groups) {
-      for (const [language, list] of [
-        ["zh", group.zh],
-        ["en", group.en],
-      ] as const) {
+      for (const language of languages) {
+        const list = group[language];
         const repeats = settings.follow
           ? language === "zh"
             ? settings.zhRepeats

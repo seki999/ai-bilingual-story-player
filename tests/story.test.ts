@@ -102,6 +102,13 @@ describe("dialogue and scenes", () => {
     expect(paired.findIndex((e) => e.cue.language === "en")).toBeLessThan(
       p.cues.filter((c) => c.language === "zh").length,
     );
+    p.player.order = "paired-en-first";
+    const englishFirst = makeTimeline(p).entries.map(
+      (entry) => entry.cue.subtitleId,
+    );
+    expect(englishFirst).toEqual(
+      p.groups.flatMap((group) => [...group.en, ...group.zh]),
+    );
     p.player.order = "serial";
     const serial = makeTimeline(p).entries;
     expect(serial.findIndex((e) => e.cue.language === "en")).toBe(

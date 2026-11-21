@@ -136,11 +136,12 @@ export function Player({
             value={project.player.order}
             onChange={(event) =>
               onSettings({
-                order: event.target.value as "paired" | "serial",
+                order: event.target.value as StoryProject["player"]["order"],
               })
             }
           >
-            <option value="paired">逐段对照</option>
+            <option value="paired">逐段对照 · 先中后英</option>
+            <option value="paired-en-first">逐段对照 · 先英后中</option>
             <option value="serial">整篇中文后英语</option>
           </select>
         )}

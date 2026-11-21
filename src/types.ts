@@ -86,7 +86,7 @@ export type GenerationSettings = {
 export type VoiceGender = "male" | "female";
 export type PlayerSettings = {
   mode: Mode;
-  order: "paired" | "serial";
+  order: "paired" | "paired-en-first" | "serial";
   rate: number;
   volume: number;
   voices: Record<string, string>;

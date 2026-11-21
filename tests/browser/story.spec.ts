@@ -78,6 +78,9 @@ test("demo, planning, all modes, playback, editing, persistence and ZIP import",
   await page.getByLabel("中英播放顺序").selectOption("serial");
   await expect(page.locator(".cue-lang").first()).toHaveText("中");
   await expect(page.locator(".cue-lang").last()).toHaveText("EN");
+  await page.getByLabel("中英播放顺序").selectOption("paired-en-first");
+  await expect(page.locator(".cue-lang").first()).toHaveText("EN");
+  await expect(page.locator(".speaker-label")).toContainText("EN");
   await page.getByLabel("中英播放顺序").selectOption("paired");
   await page.getByRole("button", { name: "播放", exact: true }).click();
   await page.getByRole("button", { name: "暂停", exact: true }).click();

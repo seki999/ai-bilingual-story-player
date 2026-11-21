@@ -223,6 +223,17 @@ export function App() {
         engine.stop();
         return;
       }
+      const startEnglishPair =
+        !reset &&
+        p.player.mode === "mixed" &&
+        p.player.order === "paired-en-first" &&
+        (prev?.mode !== p.player.mode || prev.order !== p.player.order);
+      const pairStart = startEnglishPair
+        ? timeline.entries.findIndex(
+            (entry) =>
+              entry.cue.alignmentGroupId === oldEntry?.cue.alignmentGroupId,
+          )
+        : -1;
       const exact = timeline.entries.findIndex(
         (entry) =>
           entry.cue.subtitleId ===
@@ -237,11 +248,13 @@ export function App() {
         (entry) => entry.cue.sceneId === oldEntry?.cue.sceneId,
       );
       engine.seek(
-        exact >= 0
-          ? exact
-          : reset
-            ? 0
-            : Math.max(0, aligned >= 0 ? aligned : related),
+        pairStart >= 0
+          ? pairStart
+          : exact >= 0
+            ? exact
+            : reset
+              ? 0
+              : Math.max(0, aligned >= 0 ? aligned : related),
         !reset && wasPlaying,
       );
     },
@@ -344,7 +357,13 @@ export function App() {
         .catch((e) => setError(message(e)));
     }, 80);
     return () => clearTimeout(timer);
-  }, [snapshot.index, project?.id, project?.player.mode, engine]);
+  }, [
+    snapshot.index,
+    project?.id,
+    project?.player.mode,
+    project?.player.order,
+    engine,
+  ]);
 
   function open(view: View) {
     if (view !== "player") engine.pause();
