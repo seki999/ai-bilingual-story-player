@@ -1,11 +1,38 @@
 import type { MediaEvents, PlayHandle, TtsProvider } from "../core/playback";
-import type { PlayerSettings, Speaker, SubtitleCue } from "../types";
+import type {
+  PlayerSettings,
+  Speaker,
+  SubtitleCue,
+  VoiceGender,
+} from "../types";
 import { db } from "../storage/db";
+
+export function voiceGender(
+  voice: SpeechSynthesisVoice,
+): VoiceGender | undefined {
+  const name = voice.name.toLowerCase();
+  if (/\bfemale\b/.test(name)) return "female";
+  if (/\bmale\b/.test(name)) return "male";
+  if (
+    /\b(?:david|mark|guy|ryan|eric|christopher|roger|stewie|kuanlin|yunxi|yunyang|yunjian|yunhao|yunfeng|yunxia|yunze|yunjie|yunjun|yunye|yunjia|yunjing|kangkang|alex|fred|tom|daniel)\b/.test(
+      name,
+    )
+  )
+    return "male";
+  if (
+    /\b(?:zira|aria|jenny|sara|libby|sonia|hazel|susan|linda|xiaoxiao|xiaoyi|xiaohan|xiaomeng|xiaomo|xiaoqiu|xiaorui|xiaoshuang|xiaoxuan|xiaoyan|xiaoyou|xiaozhen|xiaobei|huihui|yaoyao|hanhan|tingting|ting-ting|meijia|mei-jia|samantha|victoria|karen|moira|tessa|fiona|ava)\b/.test(
+      name,
+    )
+  )
+    return "female";
+  return undefined;
+}
 
 export function assignVoices(
   speakers: Speaker[],
   choices: Record<string, string>,
   voices: SpeechSynthesisVoice[],
+  genders: PlayerSettings["voiceGenders"] = {},
 ) {
   const used = new Set<string>();
   return new Map(
@@ -20,8 +47,14 @@ export function assignVoices(
             Number(b.lang.toLowerCase() === locale) -
             Number(a.lang.toLowerCase() === locale),
         );
+      const preferred = genders[speaker.id];
+      const matching = preferred
+        ? available.filter((v) => voiceGender(v) === preferred)
+        : [];
       const voice =
         available.find((v) => v.voiceURI === choices[speaker.id]) ??
+        matching.find((v) => !used.has(v.voiceURI)) ??
+        matching[0] ??
         available.find((v) => !used.has(v.voiceURI)) ??
         available[0];
       if (voice) used.add(voice.voiceURI);
@@ -137,7 +170,12 @@ export class BrowserTts implements TtsProvider {
     settings: PlayerSettings,
     events: MediaEvents,
   ) {
-    const pool = assignVoices(this.speakers, settings.voices, this.voices);
+    const pool = assignVoices(
+      this.speakers,
+      settings.voices,
+      this.voices,
+      settings.voiceGenders,
+    );
     return browserSpeech(cue, settings, events, pool.get(cue.speakerId));
   }
 }

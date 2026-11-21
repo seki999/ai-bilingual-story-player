@@ -1,5 +1,6 @@
 import { AudioLines } from "lucide-react";
-import type { PlayerSettings, StoryProject } from "../types";
+import type { PlayerSettings, StoryProject, VoiceGender } from "../types";
+import { voiceGender } from "../providers/tts";
 
 export function Settings({
   project,
@@ -32,8 +33,23 @@ export function Settings({
               })
             }
           >
-            <option value="overlay">图片内</option>
+            <option value="overlay">画面底部</option>
+            <option value="overlay-middle">画面中央</option>
+            <option value="overlay-top">画面顶部</option>
             <option value="below">图片下方</option>
+          </select>
+        </label>
+        <label>
+          字幕大小
+          <select
+            value={settings.subtitleScale ?? 100}
+            onChange={(e) => patch({ subtitleScale: Number(e.target.value) })}
+          >
+            {[75, 90, 100, 115, 130, 150, 175, 200].map((size) => (
+              <option key={size} value={size}>
+                {size}%
+              </option>
+            ))}
           </select>
         </label>
         <label>
@@ -154,37 +170,75 @@ export function Settings({
       </p>
       <h3>人物语音</h3>
       <p className="muted">
-        可选声音取决于浏览器与操作系统。系统语音的离线可用性因设备而异。
+        男声和女声从设备可识别的同语言声音中匹配。你也可以选择具体声音并试听。
       </p>
-      {project.speakers.map((speaker) => (
-        <div className="voice-row" key={speaker.id}>
-          <label>
-            {speaker.name} · {speaker.language === "zh" ? "中文" : "English"}
-            <select
-              value={settings.voices[speaker.id] ?? ""}
-              onChange={(e) =>
-                patch({
-                  voices: { ...settings.voices, [speaker.id]: e.target.value },
-                })
-              }
-            >
-              <option value="">自动选择</option>
-              {voices
-                .filter((voice) =>
-                  voice.lang.toLowerCase().startsWith(speaker.language),
-                )
-                .map((voice) => (
-                  <option key={voice.voiceURI} value={voice.voiceURI}>
-                    {voice.name} ({voice.lang})
-                  </option>
-                ))}
-            </select>
-          </label>
-          <button onClick={() => preview(speaker.id)}>
-            <AudioLines size={16} /> 试听
-          </button>
-        </div>
-      ))}
+      {[...project.speakers]
+        .sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }))
+        .map((speaker) => {
+          const preference = settings.voiceGenders?.[speaker.id];
+          const available = voices.filter((voice) =>
+            voice.lang.toLowerCase().startsWith(speaker.language),
+          );
+          const noMatch =
+            preference &&
+            !settings.voices[speaker.id] &&
+            !available.some((voice) => voiceGender(voice) === preference);
+          return (
+            <div className="voice-row" key={speaker.id}>
+              <label>
+                {speaker.name} 声线
+                <select
+                  value={preference ?? ""}
+                  onChange={(e) =>
+                    patch({
+                      voiceGenders: {
+                        ...settings.voiceGenders,
+                        [speaker.id]: (e.target.value || undefined) as
+                          VoiceGender | undefined,
+                      },
+                      voices: { ...settings.voices, [speaker.id]: "" },
+                    })
+                  }
+                >
+                  <option value="">自动</option>
+                  <option value="male">男声</option>
+                  <option value="female">女声</option>
+                </select>
+              </label>
+              <label>
+                {speaker.name} ·{" "}
+                {speaker.language === "zh" ? "中文" : "English"}
+                <select
+                  value={settings.voices[speaker.id] ?? ""}
+                  onChange={(e) =>
+                    patch({
+                      voices: {
+                        ...settings.voices,
+                        [speaker.id]: e.target.value,
+                      },
+                    })
+                  }
+                >
+                  <option value="">自动选择</option>
+                  {available.map((voice) => (
+                    <option key={voice.voiceURI} value={voice.voiceURI}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button onClick={() => preview(speaker.id)}>
+                <AudioLines size={16} /> 试听
+              </button>
+              {noMatch && (
+                <small className="voice-fallback">
+                  当前设备没有可识别的{preference === "male" ? "男声" : "女声"}
+                  ，将使用可用声音。
+                </small>
+              )}
+            </div>
+          );
+        })}
     </section>
   );
 }

@@ -38,6 +38,8 @@ export const playerDefaults: PlayerSettings = {
   enRepeats: 2,
   gap: 3,
   subtitlePlacement: "overlay",
+  subtitleScale: 100,
+  voiceGenders: {},
   zhFont: "system-ui",
   enFont: "system-ui",
 };

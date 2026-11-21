@@ -453,6 +453,15 @@ footer span {
   overflow-wrap: anywhere;
   font-weight: 650;
 }
+.frame .subtitle[data-position="overlay-top"] {
+  top: 16%;
+  bottom: auto;
+}
+.frame .subtitle[data-position="overlay-middle"] {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
 .subtitle mark {
   color: #f4d082;
   background: transparent;
@@ -1025,4 +1034,19 @@ summary {
 }
 .local-library-heading {
   margin-top: 22px;
+}
+
+.voice-row {
+  grid-template-columns: minmax(6rem, 0.55fr) minmax(0, 1fr) auto;
+}
+.voice-fallback {
+  grid-column: 1 / -1;
+}
+@media (max-width: 480px) {
+  .voice-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .voice-row > label:first-child {
+    grid-column: 1 / -1;
+  }
 }

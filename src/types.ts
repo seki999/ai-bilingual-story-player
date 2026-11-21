@@ -83,6 +83,7 @@ export type GenerationSettings = {
   imageCountBudget: number;
   style: string;
 };
+export type VoiceGender = "male" | "female";
 export type PlayerSettings = {
   mode: Mode;
   order: "paired" | "serial";
@@ -96,7 +97,9 @@ export type PlayerSettings = {
   zhRepeats: number;
   enRepeats: number;
   gap: number;
-  subtitlePlacement: "overlay" | "below";
+  subtitlePlacement: "overlay" | "overlay-top" | "overlay-middle" | "below";
+  subtitleScale?: number;
+  voiceGenders?: Record<string, VoiceGender | undefined>;
   zhFont: string;
   enFont: string;
 };

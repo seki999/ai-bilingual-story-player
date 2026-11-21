@@ -213,6 +213,7 @@ export function App() {
         prev?.rate !== p.player.rate ||
         prev.volume !== p.player.volume ||
         prev.voices !== p.player.voices ||
+        prev.voiceGenders !== p.player.voiceGenders ||
         before?.cues !== p.cues ||
         before.groups !== p.groups;
       engine.settings = p.player;
@@ -249,7 +250,7 @@ export function App() {
   );
 
   const loadProject = useCallback(
-    (p: StoryProject) => {
+    (p: StoryProject, showPlayer = true) => {
       previewSession.current++;
       previewHandle.current?.stop();
       queue.cancel();
@@ -262,7 +263,7 @@ export function App() {
       accept(p, true);
       localStorage.setItem(selectionKey, p.id);
       void refreshTasks(p.id).catch((e) => setError(message(e)));
-      setView("player");
+      if (showPlayer) setView("player");
     },
     [accept, engine, queue, refreshTasks],
   );
@@ -277,6 +278,7 @@ export function App() {
       loadProject(
         stories.find((p) => p.id === localStorage.getItem(selectionKey)) ??
           stories[0],
+        false,
       );
     })().catch((e) => {
       if (open) setError(message(e));

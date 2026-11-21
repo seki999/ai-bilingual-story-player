@@ -101,9 +101,11 @@ export function Player({
   const subtitles = cue && (
     <div
       className="subtitle"
+      data-position={project.player.subtitlePlacement}
       style={{
         fontFamily:
           cue.language === "zh" ? project.player.zhFont : project.player.enFont,
+        fontSize: `calc(clamp(0.88rem, 1.9vw, 1.42rem) * ${Math.max(0.75, Math.min(2, (project.player.subtitleScale ?? 100) / 100))})`,
       }}
     >
       {highlight(cue.text, snapshot.boundary)}
@@ -160,7 +162,7 @@ export function Player({
                   {speaker.language === "zh" ? "中文" : "EN"}
                 </span>
               )}
-              {project.player.subtitlePlacement === "overlay" && subtitles}
+              {project.player.subtitlePlacement !== "below" && subtitles}
             </div>
             {project.player.subtitlePlacement === "below" && (
               <div className="subtitle-below">{subtitles}</div>
