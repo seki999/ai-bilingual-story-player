@@ -2,6 +2,12 @@
   "version": 1,
   "stories": [
     {
+      "slug": "secret-beneath-blue-bay",
+      "title": "蓝色海湾下的秘密",
+      "hash": "f6f3d288b64691e04edf090dc1d7fff48b070db3d5c121c842b4b315aeb3fceb",
+      "scenes": 20
+    },
+    {
       "slug": "january-to-march",
       "title": "一月至三月的相遇",
       "hash": "523635e8617123c0af1dab806cc0c9242687c9290752187acedc752aadb31b88",
