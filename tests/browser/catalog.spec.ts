@@ -11,6 +11,9 @@ test("a published story opens with illustration and stays available locally", as
     "公开故事测试",
     "Speaker 1: 你好！\nSpeaker 3: Hello!",
   );
+  delete project.player.subtitleBilingual;
+  project.player.subtitlePlacement = "overlay";
+  project.player.subtitleScale = 100;
   const image = await readFile("public/demo/parakeet.webp");
   Object.assign(project.scenes[0], {
     assetId: "cover",
@@ -48,7 +51,12 @@ test("a published story opens with illustration and stays available locally", as
     page.getByRole("heading", { name: project.title }),
   ).toBeVisible();
   await expect(page.locator(".frame img")).toBeVisible();
-  await expect(page.locator(".subtitle")).toHaveText("你好！");
+  await expect(page.locator(".subtitle")).toHaveAttribute(
+    "data-position",
+    "overlay-middle",
+  );
+  await expect(page.locator('.subtitle-line[lang="en"]')).toHaveText("Hello!");
+  await expect(page.locator('.subtitle-line[lang="zh"]')).toHaveText("你好！");
   await page.reload();
   await expect(
     page.getByRole("heading", { name: project.title }),

@@ -17,6 +17,7 @@ import {
   createStory,
   generationDefaults,
   playerDefaults,
+  withSubtitleDefaults,
 } from "../core/storyboard";
 import { ProxyAlignmentProvider } from "../providers/alignment";
 import {
@@ -272,7 +273,7 @@ export function App() {
       setActiveScene(undefined);
       setError("");
       setNotice("");
-      accept(p, true);
+      accept({ ...p, player: withSubtitleDefaults(p.player) }, true);
       localStorage.setItem(selectionKey, p.id);
       void refreshTasks(p.id).catch((e) => setError(message(e)));
       if (showPlayer) setView("player");

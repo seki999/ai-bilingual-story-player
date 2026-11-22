@@ -84,11 +84,17 @@ test("demo, planning, all modes, playback, editing, persistence and ZIP import",
   await page.getByLabel("中英播放顺序").selectOption("paired");
   await page.getByRole("button", { name: "播放", exact: true }).click();
   await page.getByRole("button", { name: "暂停", exact: true }).click();
-  const paused = await page.locator(".subtitle").textContent();
+  const paused = await page
+    .locator('.subtitle-line[data-active="true"]')
+    .textContent();
   await page.waitForTimeout(1550);
-  await expect(page.locator(".subtitle")).toHaveText(paused!);
+  await expect(page.locator('.subtitle-line[data-active="true"]')).toHaveText(
+    paused!,
+  );
   await page.getByRole("button", { name: "下一句" }).click();
-  await expect(page.locator(".subtitle")).not.toHaveText(paused!);
+  await expect(
+    page.locator('.subtitle-line[data-active="true"]'),
+  ).not.toHaveText(paused!);
   await page.getByRole("button", { name: "分镜", exact: true }).click();
   await page.locator(".scene-row").first().click();
   await expect(page.locator(".frame-label")).toContainText("01");

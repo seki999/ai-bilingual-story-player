@@ -37,12 +37,28 @@ export const playerDefaults: PlayerSettings = {
   zhRepeats: 1,
   enRepeats: 2,
   gap: 3,
-  subtitlePlacement: "overlay",
-  subtitleScale: 100,
+  subtitlePlacement: "overlay-middle",
+  subtitleScale: 200,
+  subtitleBilingual: true,
   voiceGenders: {},
   zhFont: "system-ui",
   enFont: "system-ui",
 };
+
+export function withSubtitleDefaults(settings: PlayerSettings): PlayerSettings {
+  if (typeof settings.subtitleBilingual === "boolean") return settings;
+  const oldDefaults =
+    settings.subtitlePlacement === "overlay" &&
+    (settings.subtitleScale ?? 100) === 100;
+  return {
+    ...settings,
+    subtitleBilingual: true,
+    subtitlePlacement: oldDefaults
+      ? "overlay-middle"
+      : settings.subtitlePlacement,
+    subtitleScale: oldDefaults ? 200 : (settings.subtitleScale ?? 100),
+  };
+}
 
 export function estimate(text: string, language: "zh" | "en") {
   const words = (text.match(/[\p{Letter}\d]+/gu) ?? []).length;

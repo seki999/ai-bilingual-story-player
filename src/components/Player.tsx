@@ -71,14 +71,6 @@ export function Player({
   const group = project.groups.find(
     (item) => item.id === cue?.alignmentGroupId,
   );
-  const translation = group
-    ? (cue?.language === "zh" ? group.en : group.zh)
-        .map(
-          (key) => project.cues.find((item) => item.subtitleId === key)?.text,
-        )
-        .filter(Boolean)
-        .join(" ")
-    : "";
   const modeLabels: [Mode, string][] = [
     ["zh", "中文"],
     ["en", "English"],
@@ -98,17 +90,49 @@ export function Player({
     }
   }, [snapshot.index, rail, project.player.mode]);
 
+  const bilingual = project.player.subtitleBilingual ?? true;
+  const languages = bilingual
+    ? (["en", "zh"] as const)
+    : cue
+      ? [cue.language]
+      : [];
   const subtitles = cue && (
     <div
       className="subtitle"
       data-position={project.player.subtitlePlacement}
       style={{
-        fontFamily:
-          cue.language === "zh" ? project.player.zhFont : project.player.enFont,
-        fontSize: `calc(clamp(0.88rem, 1.9vw, 1.42rem) * ${Math.max(0.75, Math.min(2, (project.player.subtitleScale ?? 100) / 100))})`,
+        fontSize: `calc(clamp(0.88rem, 1.9vw, 1.42rem) * ${Math.max(0.75, Math.min(2, (project.player.subtitleScale ?? 200) / 100))})`,
       }}
     >
-      {highlight(cue.text, snapshot.boundary)}
+      {languages.map((language) => {
+        const active = language === cue.language;
+        const text = active
+          ? cue.text
+          : group?.[language]
+              .map(
+                (key) =>
+                  project.cues.find((item) => item.subtitleId === key)?.text,
+              )
+              .filter(Boolean)
+              .join(" ");
+        if (!text) return null;
+        return (
+          <span
+            key={language}
+            className="subtitle-line"
+            lang={language}
+            data-active={active}
+            style={{
+              fontFamily:
+                language === "en"
+                  ? project.player.enFont
+                  : project.player.zhFont,
+            }}
+          >
+            {active ? highlight(text, snapshot.boundary) : text}
+          </span>
+        );
+      })}
     </div>
   );
   const fullscreen = () => {
@@ -276,12 +300,6 @@ export function Player({
               {snapshot.error && <p role="alert">{snapshot.error}</p>}
             </div>
           </div>
-          {translation && (
-            <div className="translation">
-              <span>{cue?.language === "zh" ? "EN" : "中文"}</span>
-              {translation}
-            </div>
-          )}
         </section>
         <aside className="rail">
           <div className="rail-head">

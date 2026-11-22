@@ -463,6 +463,20 @@ footer span {
   bottom: auto;
   transform: translate(-50%, -50%);
 }
+.subtitle-line {
+  display: block;
+}
+.subtitle-line + .subtitle-line {
+  margin-top: 0.22em;
+}
+.frame .subtitle {
+  max-width: 95%;
+  max-height: 88%;
+  overflow-y: auto;
+}
+.frame .subtitle[data-position="overlay-top"] {
+  max-height: 80%;
+}
 .subtitle mark {
   color: #f4d082;
   background: transparent;
@@ -540,24 +554,6 @@ footer span {
   padding: 0.5rem;
   min-height: 38px;
   font-size: 0.85rem;
-}
-.translation {
-  display: flex;
-  gap: 9px;
-  align-items: flex-start;
-  color: #c3c0ce;
-  font-size: 0.9rem;
-  line-height: 1.55;
-  padding: 12px 0 0;
-}
-.translation span {
-  background: #2f2740;
-  color: #d9c5ff;
-  border-radius: 5px;
-  padding: 2px 6px;
-  font-weight: 700;
-  font-size: 0.76rem;
-  white-space: nowrap;
 }
 .rail {
   background: var(--surface);

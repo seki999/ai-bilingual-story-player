@@ -99,6 +99,7 @@ export type PlayerSettings = {
   gap: number;
   subtitlePlacement: "overlay" | "overlay-top" | "overlay-middle" | "below";
   subtitleScale?: number;
+  subtitleBilingual?: boolean;
   voiceGenders?: Record<string, VoiceGender | undefined>;
   zhFont: string;
   enFont: string;

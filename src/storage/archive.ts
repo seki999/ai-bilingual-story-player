@@ -2,7 +2,11 @@ import JSZip from "jszip";
 import type { Asset, StoryProject } from "../types";
 import { id } from "../core/dialogue";
 import { assetIds, db } from "./db";
-import { generationDefaults, playerDefaults } from "../core/storyboard";
+import {
+  generationDefaults,
+  playerDefaults,
+  withSubtitleDefaults,
+} from "../core/storyboard";
 
 const imageTypes = new Set([
   "image/png",
@@ -283,7 +287,17 @@ export async function importStory(
     progress:
       typeof candidate.progress === "string" ? candidate.progress : undefined,
     generation: readSettings(generationDefaults, candidate.generation),
-    player: readSettings(playerDefaults, settings),
+    player: withSubtitleDefaults({
+      ...readSettings(playerDefaults, settings),
+      subtitleBilingual:
+        record(settings) && typeof settings.subtitleBilingual === "boolean"
+          ? settings.subtitleBilingual
+          : undefined,
+      subtitleScale:
+        record(settings) && typeof settings.subtitleScale === "number"
+          ? settings.subtitleScale
+          : undefined,
+    }),
     updatedAt: Date.now(),
     scenes: candidate.scenes.map((scene) => ({
       ...scene,

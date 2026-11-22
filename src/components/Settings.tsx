@@ -42,7 +42,7 @@ export function Settings({
         <label>
           字幕大小
           <select
-            value={settings.subtitleScale ?? 100}
+            value={settings.subtitleScale ?? 200}
             onChange={(e) => patch({ subtitleScale: Number(e.target.value) })}
           >
             {[75, 90, 100, 115, 130, 150, 175, 200].map((size) => (
@@ -51,6 +51,14 @@ export function Settings({
               </option>
             ))}
           </select>
+        </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={settings.subtitleBilingual ?? true}
+            onChange={(e) => patch({ subtitleBilingual: e.target.checked })}
+          />
+          双语字幕（英语在上，中文在下）
         </label>
         <label>
           中文字体
