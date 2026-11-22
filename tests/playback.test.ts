@@ -45,6 +45,16 @@ it("pauses the driver and rejects events from cancelled cues", async () => {
   expect(engine.snapshot).toMatchObject({ index: 1, status: "playing" });
   events[1].end();
   expect(engine.snapshot.index).toBe(2);
+  await Promise.resolve();
+  engine.jumpToEnd();
+  events[2].end();
+  expect(engine.snapshot).toMatchObject({
+    index: engine.timeline.entries.length - 1,
+    status: "completed",
+  });
+  engine.play();
+  expect(engine.snapshot.index).toBe(0);
+  await Promise.resolve();
   engine.dispose();
 });
 

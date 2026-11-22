@@ -139,6 +139,15 @@ test("demo, planning, all modes, playback, editing, persistence and ZIP import",
     1,
   );
   await expect(page.locator(".frame img")).toBeVisible();
+  await page.getByRole("button", { name: "跳到末尾", exact: true }).click();
+  await expect(page.locator(".cue-list .cue").last()).toHaveAttribute(
+    "aria-current",
+    "true",
+  );
+  const time = (await page.locator(".progress-line").innerText())
+    .split("/")
+    .map((part) => part.trim());
+  expect(time[0]).toBe(time[1]);
 });
 
 test("mobile has room for the player and transcript", async ({ page }) => {

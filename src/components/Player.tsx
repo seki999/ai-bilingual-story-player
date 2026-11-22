@@ -10,7 +10,6 @@ import {
   Repeat2,
   SkipBack,
   SkipForward,
-  Square,
   Volume2,
 } from "lucide-react";
 import type { Mode, Scene, StoryProject } from "../types";
@@ -228,8 +227,12 @@ export function Player({
                     <Play size={20} fill="currentColor" />
                   )}
                 </IconButton>
-                <IconButton label="停止" onClick={() => engine.stop()}>
-                  <Square size={16} />
+                <IconButton
+                  label="跳到末尾"
+                  disabled={!entries.length}
+                  onClick={() => engine.jumpToEnd()}
+                >
+                  末尾
                 </IconButton>
                 <IconButton
                   label="上一句"

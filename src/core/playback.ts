@@ -122,6 +122,18 @@ export class PlaybackEngine {
       error: undefined,
     });
   }
+  jumpToEnd() {
+    const index = this.timeline.entries.length - 1;
+    if (index < 0) return;
+    this.cancel();
+    this.set({
+      status: "completed",
+      index,
+      elapsed: 0,
+      boundary: undefined,
+      error: undefined,
+    });
+  }
   play() {
     if (this.snapshot.status === "paused" && this.gapRemaining > 0) {
       this.set({ status: "playing" });
@@ -245,7 +257,7 @@ export class PlaybackEngine {
     }
     if (next >= entries.length && loop === "story") next = 0;
     if (entries[next]) void this.start(next);
-    else this.set({ status: "completed" });
+    else this.seek(0, false);
   }
   private async start(index: number, initialElapsed = 0) {
     const entry = this.timeline.entries[index];

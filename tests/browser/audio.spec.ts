@@ -55,4 +55,6 @@ test("actual browser audio pauses with its subtitle and advances only when ended
   await expect(page.locator(".subtitle")).toHaveText("Hello!");
   await page.getByRole("button", { name: "播放", exact: true }).click();
   await expect(page.locator(".subtitle")).toHaveText("Goodbye!");
+  await expect(page.locator(".subtitle")).toHaveText("Hello!");
+  await expect(page.getByLabel("播放进度")).toHaveValue("0");
 });
