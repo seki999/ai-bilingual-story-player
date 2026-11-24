@@ -2,6 +2,12 @@
   "version": 1,
   "stories": [
     {
+      "slug": "kubernetes-in-eight-scenes",
+      "title": "看懂 Kubernetes：8 个场景的双语教程",
+      "hash": "627a2d19f7527764d7a6464064cee65ca042e2d638be77d3c680b56c4667f0c1",
+      "scenes": 32
+    },
+    {
       "slug": "secret-beneath-blue-bay",
       "title": "蓝色海湾下的秘密",
       "hash": "74d81ba5f3d7b6fb7cbc80e8f410eec88a9f02be94097c58d0aeeb957db4b5ac",
