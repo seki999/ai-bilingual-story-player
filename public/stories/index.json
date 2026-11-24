@@ -3,8 +3,8 @@
   "stories": [
     {
       "slug": "kubernetes-in-eight-scenes",
-      "title": "看懂 Kubernetes：8 个场景的双语教程",
-      "hash": "627a2d19f7527764d7a6464064cee65ca042e2d638be77d3c680b56c4667f0c1",
+      "title": "Kubernetes 沉浸式双语播客：第1集",
+      "hash": "1de58dac2a6118fe8809db007dfffe075c06480925c38d630b3991db8908b774",
       "scenes": 32
     },
     {
