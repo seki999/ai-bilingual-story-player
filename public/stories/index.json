@@ -2,6 +2,12 @@
   "version": 1,
   "stories": [
     {
+      "slug": "kubernetes-podcast-episode-3",
+      "title": "Kubernetes 沉浸式双语播客：第3集",
+      "hash": "df0328db4a956b853a77321080232b8264f0cbf2f83150ede568d21a0bcaf8d9",
+      "scenes": 51
+    },
+    {
       "slug": "kubernetes-podcast-episode-2",
       "title": "Kubernetes 沉浸式双语播客：第2集",
       "hash": "bec7dd31d601a6771a467bb1a547ca95d75475e68ce548213b292ec488fff281",
