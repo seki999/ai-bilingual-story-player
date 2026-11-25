@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile, writeFile, rename, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
-import { createStory } from "../src/core/storyboard";
+import { createStory, generationDefaults } from "../src/core/storyboard";
 import { packStory } from "../src/storage/archive";
 import {
   isPublishedStory,
@@ -10,13 +10,37 @@ import {
 } from "../src/storage/catalog";
 import type { ImageAsset } from "../src/types";
 
-const [command, sourceFile, title, slug, imageDirectory] =
-  process.argv.slice(2);
+const [command, sourceFile, title, ...args] = process.argv.slice(2);
 if (!sourceFile || !title || !["plan", "add"].includes(command))
   throw new Error(
-    'Usage: npm run story:publish -- plan dialogue.txt "Title" or add dialogue.txt "Title" story-slug images/',
+    'Usage: plan dialogue.txt "Title" [--shots N] or add dialogue.txt "Title" story-slug images/ [--shots N] [--folder "Name"]',
   );
-const project = createStory(title, await readFile(sourceFile, "utf8"));
+const [slug, imageDirectory, ...addOptions] = args;
+const options = command === "plan" ? args : addOptions;
+const flags = new Map<string, string>();
+for (let index = 0; index < options.length; index += 2) {
+  const [flag, value] = options.slice(index, index + 2);
+  if (!(flag === "--shots" || (command === "add" && flag === "--folder")) || !value?.trim())
+    throw new Error(`Invalid or missing value for ${flag}.`);
+  flags.set(flag, value.trim());
+}
+
+const folderName = flags.get("--folder");
+const shots = flags.has("--shots") ? Number(flags.get("--shots")) : undefined;
+if (shots !== undefined && (!Number.isInteger(shots) || shots < 1 || shots > 100))
+  throw new Error("--shots must be an integer from 1 to 100.");
+const project = createStory(
+  title,
+  await readFile(sourceFile, "utf8"),
+  shots === undefined
+    ? generationDefaults
+    : {
+        ...generationDefaults,
+        density: "max",
+        maxSceneCount: shots,
+        imageCountBudget: shots,
+      },
+);
 const imageNames = project.scenes.map(
   (_, i) => `scene-${String(i + 1).padStart(2, "0")}.webp`,
 );
@@ -86,6 +110,7 @@ if (command === "plan") {
     title: project.title,
     hash,
     scenes: project.scenes.length,
+    folder: folderName,
   });
   await writeFile(indexFile + ".tmp", JSON.stringify(catalog, null, 2) + "\n");
   await rename(indexFile + ".tmp", indexFile);
