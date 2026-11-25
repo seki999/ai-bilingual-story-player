@@ -289,8 +289,8 @@ function checkedDialogue(source: string) {
   if (source.length > 90000)
     throw new Error("对话超过 90,000 字符，请拆成多个故事。");
   const data = parseDialogue(source);
-  if (data.segments.length > 1200)
-    throw new Error("字幕超过 1,200 段，请拆成多个故事。");
+  if (data.segments.length > 1500)
+    throw new Error("字幕超过 1,500 段，请拆成多个故事。");
   return data;
 }
 

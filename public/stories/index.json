@@ -2,6 +2,12 @@
   "version": 1,
   "stories": [
     {
+      "slug": "minikube-datacenter-rescue",
+      "title": "上线前30分钟：Minikube机房大救援",
+      "hash": "71882a2de6838ef2b59489fabab27790cc292057852daa37a1b5a8a29a2e7bf4",
+      "scenes": 12
+    },
+    {
       "slug": "cloud-crisis-episode-01",
       "title": "第01集：最后30天——一场不能失败的云端迁移",
       "hash": "df51db8f6bf0830d955c75588050ff05fcac7ca0de0a566d95e414a7896538b6",
