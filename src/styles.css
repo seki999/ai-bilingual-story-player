@@ -1078,3 +1078,26 @@ summary {
     grid-column: 1 / -1;
   }
 }
+
+.folder-tutorials {
+  margin: 12px 0 8px 16px;
+}
+.folder-tutorial-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 8px;
+}
+.folder-tutorial-row button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.folder-tutorials iframe {
+  display: block;
+  width: 100%;
+  height: 65vh;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  background: white;
+}

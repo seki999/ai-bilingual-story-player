@@ -75,7 +75,7 @@ test("published folders group episodes and retain manual organization", async ({
   await expect(series.locator("summary")).toContainText("3 个故事");
   await expect(episode).toBeHidden();
   await series.locator("summary").click();
-  await expect(series.getByRole("button")).toHaveText([
+  await expect(series.getByRole("button", { name: /播客：第/ })).toHaveText([
     /第1集/, /第2集/, /第3集/,
   ]);
 
@@ -95,4 +95,34 @@ test("published folders group episodes and retain manual organization", async ({
   await move.selectOption("");
   await expect(folder.locator("summary")).toContainText("0 个故事");
   await expect(episode).toBeVisible();
+});
+
+test("folder tutorials can be previewed, retained and removed", async ({ page }) => {
+  await page.goto("/");
+  const openFolder = async () => {
+    await page.getByRole("button", { name: "项目库" }).click();
+    await page.locator("summary").filter({ hasText: "Kubernetes 沉浸式双语播客" }).click();
+  };
+  await openFolder();
+  const checklist = "kubernetes.html";
+  const [chooser] = await Promise.all([
+    page.waitForEvent("filechooser"),
+    page.getByRole("button", { name: "添加教程 HTML" }).click(),
+  ]);
+  await chooser.setFiles({
+    name: checklist,
+    mimeType: "text/html",
+    buffer: Buffer.from("<h1>部署检查清单</h1><script>document.querySelector('h1').textContent = 'SCRIPT EXECUTED'</script>"),
+  });
+  await expect(page.getByRole("button", { name: checklist, exact: true })).toBeVisible();
+  await page.reload();
+  await openFolder();
+  await page.getByRole("button", { name: checklist, exact: true }).click();
+  const frame = page.frameLocator('iframe[title="kubernetes.html"]');
+  await expect(frame.getByRole("heading", { name: "部署检查清单" })).toBeVisible();
+  await expect(page.locator("iframe")).toHaveAttribute("sandbox", "");
+  page.once("dialog", (dialog) => void dialog.accept());
+  await page.getByRole("button", { name: /移除教程/ }).click();
+  await expect(page.getByRole("button", { name: checklist, exact: true })).toHaveCount(0);
+  await expect(page.locator("iframe")).toHaveCount(0);
 });

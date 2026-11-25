@@ -1,10 +1,19 @@
 import Dexie, { type Table } from "dexie";
 import type { Asset, GenerationTask, StoryProject } from "../types";
 
+export type FolderTutorial = {
+  id: string;
+  library: string;
+  folder: string;
+  name: string;
+  html: string;
+};
+
 export class StoryDatabase extends Dexie {
   projects!: Table<StoryProject, string>;
   assets!: Table<Asset, string>;
   tasks!: Table<GenerationTask, string>;
+  tutorials!: Table<FolderTutorial, string>;
   constructor(name = "ai-bilingual-story-player") {
     super(name);
     this.version(1).stores({
@@ -12,6 +21,7 @@ export class StoryDatabase extends Dexie {
       assets: "id,cacheKey",
       tasks: "id,projectId,status",
     });
+    this.version(2).stores({ tutorials: "id,[library+folder]" });
   }
 }
 export const db = new StoryDatabase();

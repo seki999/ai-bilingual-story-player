@@ -1,5 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { FolderOpen } from "lucide-react";
+import { FolderTutorials } from "./FolderTutorials";
 
 type Organization = {
   folders: string[];
@@ -113,7 +114,8 @@ export function LibraryFolders<T extends LibraryItem>({
             <strong>{folder}</strong>
             <small>{members.length} 个故事</small>
           </summary>
-          {members.length ? members.map(renderRow) : <p className="muted">空文件夹</p>}
+          {members.length ? members.map(renderRow) : <p className="muted">暂无故事</p>}
+          <FolderTutorials library={storageKey} folder={folder} />
         </details>
       ))}
       {unfiled.map(renderRow)}
