@@ -6,6 +6,7 @@ export type PublishedStory = {
   title: string;
   hash: string;
   scenes: number;
+  folder?: string;
 };
 
 export const publishedSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -23,7 +24,9 @@ export function isPublishedStory(value: unknown): value is PublishedStory {
     publishedHash.test(story.hash) &&
     typeof story.scenes === "number" &&
     Number.isInteger(story.scenes) &&
-    story.scenes > 0
+    story.scenes > 0 &&
+    (story.folder === undefined ||
+      (typeof story.folder === "string" && story.folder.trim().length > 0))
   );
 }
 

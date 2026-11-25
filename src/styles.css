@@ -827,6 +827,38 @@ summary {
 .library > .actions {
   margin-top: 14px;
 }
+.library-folder-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.library-folder-form input {
+  width: min(100%, 240px);
+}
+.library-folder {
+  border-bottom: 1px solid var(--line);
+  padding: 8px 0;
+}
+.library-folder summary {
+  cursor: pointer;
+  padding: 10px;
+}
+.library-folder summary svg {
+  vertical-align: middle;
+  margin-inline: 8px;
+}
+.library-folder summary small {
+  display: inline-block;
+  margin-inline-start: 8px;
+}
+.library-folder > .library-row,
+.library-folder > p {
+  margin-inline-start: 16px;
+}
+.library-row select {
+  max-width: min(100%, 240px);
+}
 .project-link {
   border: none;
   background: transparent;

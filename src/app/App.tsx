@@ -12,6 +12,7 @@ import {
 import { Player } from "../components/Player";
 import { Editor, GenerationFields } from "../components/Editor";
 import { Settings } from "../components/Settings";
+import { LibraryFolders } from "../components/LibraryFolders";
 import {
   createAlignedStory,
   createStory,
@@ -766,118 +767,130 @@ export function App() {
             {!catalogError && published.length === 0 && (
               <p className="muted">暂无发布的故事。可以先体验鹦鹉餐厅 Demo。</p>
             )}
-            {published.map((story) => (
-              <div className="library-row" key={story.slug}>
-                <button
-                  className="project-link"
-                  disabled={busy}
-                  onClick={() =>
-                    void action(async () => {
-                      await writes.current;
-                      const p = await openPublished(story, (value) =>
-                        setNotice(`正在加载 ${Math.round(value)}%`),
-                      );
-                      loadProject(p);
-                    })
-                  }
-                >
-                  <span className="brand-mark">
-                    <Clapperboard size={21} />
-                  </span>
-                  <span>
-                    <strong>{story.title}</strong>
-                    <small>{story.scenes} 个镜头</small>
-                  </span>
-                </button>
-              </div>
-            ))}
-            <h2 className="local-library-heading">本地项目</h2>
-            {library.map((p) => (
-              <div className="library-row" key={p.id}>
-                <button
-                  className="project-link"
-                  onClick={() =>
-                    void action(async () => {
-                      await writes.current;
-                      loadProject((await db.projects.get(p.id)) ?? p);
-                    })
-                  }
-                >
-                  <span className="brand-mark">
-                    <Clapperboard size={21} />
-                  </span>
-                  <span>
-                    <strong>{p.title}</strong>
-                    <small>
-                      {p.scenes.length} 个镜头 · {p.cues.length} 段字幕
-                    </small>
-                  </span>
-                </button>
-                <div className="actions">
+            <LibraryFolders
+              storageKey="story-library:published-folders"
+              label="已发布故事"
+              items={published.map((story) => ({ ...story, id: story.slug }))}
+              renderItem={(story, moveControl) => (
+                <div className="library-row" key={story.slug}>
                   <button
-                    onClick={() =>
-                      void action(async () => {
-                        const title = window
-                          .prompt("新的故事名称", p.title)
-                          ?.trim();
-                        if (!title) return;
-                        await writes.current;
-                        await db.projects.update(p.id, {
-                          title,
-                          updatedAt: Date.now(),
-                        });
-                        if (current.current?.id === p.id)
-                          accept({ ...current.current, title });
-                        await refreshLibrary();
-                      })
-                    }
-                  >
-                    重命名
-                  </button>
-                  <button
+                    className="project-link"
+                    disabled={busy}
                     onClick={() =>
                       void action(async () => {
                         await writes.current;
-                        const source = await db.projects.get(p.id);
-                        if (!source) throw new Error("找不到故事。");
-                        await db.projects.put({
-                          ...source,
-                          id: id(),
-                          title: `${source.title}（副本）`,
-                          updatedAt: Date.now(),
-                        });
-                        await refreshLibrary();
+                        const p = await openPublished(story, (value) =>
+                          setNotice(`正在加载 ${Math.round(value)}%`),
+                        );
+                        loadProject(p);
                       })
                     }
                   >
-                    复制
+                    <span className="brand-mark">
+                      <Clapperboard size={21} />
+                    </span>
+                    <span>
+                      <strong>{story.title}</strong>
+                      <small>{story.scenes} 个镜头</small>
+                    </span>
                   </button>
-                  <button
-                    className="danger"
-                    onClick={() =>
-                      void action(async () => {
-                        if (!window.confirm(`删除「${p.title}」？`)) return;
-                        await writes.current;
-                        if (current.current?.id === p.id) {
-                          queue.cancel();
-                          referenceController.current?.abort();
-                          engine.stop();
-                        }
-                        await removeProject(p.id);
-                        if (current.current?.id === p.id) {
-                          current.current = undefined;
-                          setProject(undefined);
-                          localStorage.removeItem(selectionKey);
-                        }
-                        await refreshLibrary();
-                      })
-                    }
-                  >
-                    删除
-                  </button>
+                  {moveControl}
                 </div>
-              </div>
-            ))}
+              )}
+            />
+            <h2 className="local-library-heading">本地项目</h2>
+            <LibraryFolders
+              storageKey="story-library:local-folders"
+              label="本地项目"
+              items={library}
+              renderItem={(p, moveControl) => (
+                <div className="library-row" key={p.id}>
+                  <button
+                    className="project-link"
+                    onClick={() =>
+                      void action(async () => {
+                        await writes.current;
+                        loadProject((await db.projects.get(p.id)) ?? p);
+                      })
+                    }
+                  >
+                    <span className="brand-mark">
+                      <Clapperboard size={21} />
+                    </span>
+                    <span>
+                      <strong>{p.title}</strong>
+                      <small>
+                        {p.scenes.length} 个镜头 · {p.cues.length} 段字幕
+                      </small>
+                    </span>
+                  </button>
+                  <div className="actions">
+                    {moveControl}
+                    <button
+                      onClick={() =>
+                        void action(async () => {
+                          const title = window
+                            .prompt("新的故事名称", p.title)
+                            ?.trim();
+                          if (!title) return;
+                          await writes.current;
+                          await db.projects.update(p.id, {
+                            title,
+                            updatedAt: Date.now(),
+                          });
+                          if (current.current?.id === p.id)
+                            accept({ ...current.current, title });
+                          await refreshLibrary();
+                        })
+                      }
+                    >
+                      重命名
+                    </button>
+                    <button
+                      onClick={() =>
+                        void action(async () => {
+                          await writes.current;
+                          const source = await db.projects.get(p.id);
+                          if (!source) throw new Error("找不到故事。");
+                          await db.projects.put({
+                            ...source,
+                            id: id(),
+                            title: `${source.title}（副本）`,
+                            updatedAt: Date.now(),
+                          });
+                          await refreshLibrary();
+                        })
+                      }
+                    >
+                      复制
+                    </button>
+                    <button
+                      className="danger"
+                      onClick={() =>
+                        void action(async () => {
+                          if (!window.confirm(`删除「${p.title}」？`)) return;
+                          await writes.current;
+                          if (current.current?.id === p.id) {
+                            queue.cancel();
+                            referenceController.current?.abort();
+                            engine.stop();
+                          }
+                          await removeProject(p.id);
+                          if (current.current?.id === p.id) {
+                            current.current = undefined;
+                            setProject(undefined);
+                            localStorage.removeItem(selectionKey);
+                          }
+                          await refreshLibrary();
+                        })
+                      }
+                    >
+                      删除
+                    </button>
+                  </div>
+                </div>
+              )}
+            />
             <div className="actions">
               <button
                 onClick={() =>

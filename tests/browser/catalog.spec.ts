@@ -64,3 +64,35 @@ test("a published story opens with illustration and stays available locally", as
   await expect(page.locator(".frame img")).toBeVisible();
   expect(downloads).toBe(1);
 });
+
+test("published folders group episodes and retain manual organization", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "项目库" }).click();
+  const series = page.locator("details").filter({
+    has: page.locator("summary").filter({ hasText: "Kubernetes 沉浸式双语播客" }),
+  });
+  const episode = page.getByRole("button", { name: /播客：第2集/ });
+  await expect(series.locator("summary")).toContainText("3 个故事");
+  await expect(episode).toBeHidden();
+  await series.locator("summary").click();
+  await expect(series.getByRole("button")).toHaveText([
+    /第1集/, /第2集/, /第3集/,
+  ]);
+
+  const name = page.getByRole("textbox", { name: "已发布故事文件夹名称" });
+  await name.fill("稍后学习");
+  await name.press("Enter");
+  const folder = page.locator("details").filter({ hasText: "稍后学习" }).filter({
+    has: page.locator("summary").filter({ hasText: "稍后学习" }),
+  });
+  const move = page.getByRole("combobox", { name: /移动.*第2集/ });
+  await move.selectOption("稍后学习");
+  await expect(folder.locator("summary")).toContainText("1 个故事");
+  await page.reload();
+  await page.getByRole("button", { name: "项目库" }).click();
+  await folder.locator("summary").click();
+  await expect(folder.getByRole("button", { name: /第2集/ })).toBeVisible();
+  await move.selectOption("");
+  await expect(folder.locator("summary")).toContainText("0 个故事");
+  await expect(episode).toBeVisible();
+});
