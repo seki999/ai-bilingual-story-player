@@ -2,6 +2,12 @@
   "version": 1,
   "stories": [
     {
+      "slug": "missing-lambda-request",
+      "title": "失踪的 Lambda 请求",
+      "hash": "1d30e287d30e057e8a66f21efc9ddc858a17ff96dea927e7f8bc26889c83720c",
+      "scenes": 8
+    },
+    {
       "slug": "minikube-datacenter-rescue",
       "title": "上线前30分钟：Minikube机房大救援",
       "hash": "594987a5c5164c8bb20364d42fc81f754438cb9d7fcd32339167d97967265227",
